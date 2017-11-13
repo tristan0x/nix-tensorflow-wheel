@@ -1,0 +1,72 @@
+version: '2.3'
+
+# Compilation flags to run on Viz Cluster
+#
+# gcc -march=native -Q --help=target \
+# | grep "\[enabled\]" \
+# | awk '{print $1}' \
+# | sort \
+# | tr '\n' ' '
+#
+x-custom:
+  - &cflags >-
+    -m64 -m80387 -m96bit-long-double -maes -malign-stringops -mavx -mcx16
+    -mfancy-math-387 -mfp-ret-in-387 -mfused-madd -mglibc -mhard-float
+    -mieee-fp -mpclmul -mpopcnt -mpush-args -mred-zone -msahf -msse -msse2
+    -msse3 -msse4 -msse4.1 -msse4.2 -mssse3 -mstackrealign -mtls-direct-seg-ref
+
+services:
+  tensorflow-py2:
+    build:
+      dockerfile: Dockerfile.devel
+      context: context
+      args:
+        TF_CFLAGS: *cflags
+    image: bluebrain/tensorflow-py2
+
+  tensorflow-py3:
+    build:
+      dockerfile: Dockerfile.devel-py3
+      context: context
+      args:
+        TF_CFLAGS: *cflags
+    image: bluebrain/tensorflow-py3
+
+  tensorflow-gpu-py2:
+    build:
+      dockerfile: Dockerfile.devel-gpu
+      context: context
+      args:
+        TF_CFLAGS: *cflags
+    image: bluebrain/tensorflow-gpu-py2
+
+  tensorflow-gpu-py3:
+    image: bluebrain/tensorflow-gpu-py3
+    build:
+      dockerfile: Dockerfile.devel-gpu-py3
+      context: context
+      args:
+        TF_CFLAGS: *cflags
+
+  # Services below start starts container previously built,
+  # copy the built whl file in /tmp/pip/ from
+  # the container to $PWD/dist
+  tensorflow-py2-whl:
+    image: bluebrain/tensorflow-py2
+    command: find /tmp/pip -name "*.whl" -exec cp {} /dist ;
+    working_dir: /tmp
+    user: ${USER_ID}:${GROUP_ID}
+    volumes:
+    - $PWD/dist:/dist
+
+  tensorflow-gpu-py2-whl:
+    extends: tensorflow-py2-whl
+    image: bluebrain/tensorflow-gpu-py2
+
+  tensorflow-py3-whl:
+    extends: tensorflow-py2-whl
+    image: bluebrain/tensorflow-py3
+
+  tensorflow-gpu-py3-whl:
+    extends: tensorflow-py2-whl
+    image: bluebrain/tensorflow-gpu-py3

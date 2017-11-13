@@ -1,0 +1,37 @@
+#!/bin/sh -e
+
+CURL="${CURL:-curl}"
+SED="${SED:-sed}"
+PYTHON3_VERSION="${PYTHON_VERSION:-3.4}"
+
+raw_base_url=https://raw.githubusercontent.com/tensorflow/tensorflow/master
+tf_recipe_dir=tensorflow/tools/docker
+
+update_recipe() {
+    < "${1}.github" \
+    "$SED" -e 's@^\(FROM.*\)@\1\nARG TF_CFLAGS\nENV CC_OPT_FLAGS="${TF_CFLAGS}"\nRUN ln -s /usr/bin/python3 /usr/bin/python@' \
+    | "$SED" '/    rm -rf \/tmp\/pip && \\/d' \
+    | "$SED" 's/bazel build /bazel build -s /'
+}
+
+if [ "x$1" = 'x--three' ] ;then
+    python3=true
+    shift
+fi
+
+if [ "x$DIRNAME" != "x" ] ;then
+	echo $DIRNAME
+    mkdir -p "$DIRNAME"
+fi
+
+if [ "x$python3" = xtrue ] ; then
+    # Patch Dockerfile to use Python 3
+    update_recipe "$1" \
+    | sed /python-dev/d \
+    | sed "s/ python / python${PYTHON_VERSION} /" \
+    | sed "s/ENV CI_BUILD_PYTHON python/ENV CI_BUILD_PYTHON python${PYTHON_VERSION}/" \
+    | sed "s@apt-get clean.*@add-apt-repository -y ppa:fkrull/deadsnakes \&\& \\\\\n    apt-get update \&\& \\\\\n    apt-get purge -y python3 \&\& \\\\\n    apt-get autoremove -y \&\& \\\\\n    apt-get install -y python${PYTHON_VERSION}-dev \&\& \\\\\n    ln -s /usr/bin/python3.4 /usr/bin/python \&\& \\\\\n    apt-get clean \&\& \\\\@" \
+    > "$1-py3"
+else
+    update_recipe "$1" > "$1"
+fi

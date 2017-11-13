@@ -36,11 +36,11 @@ TF_GITHUB_DOCKERFILES = \
 TF_GITHUB_RAW = https://raw.githubusercontent.com/tensorflow/tensorflow/master
 TF_GITHUB_RECIPE_DIR = tensorflow/tools/docker
 
-all: $(DC_WHEEL_CP_SERVICES)
-
-cpu: $(DC_CPU_WHEEL_CP_SERVICES)
+all: gpu
 
 gpu: $(DC_GPU_WHEEL_CP_SERVICES)
+
+cpu: $(DC_CPU_WHEEL_CP_SERVICES)
 
 dockerfiles: $(DOCKERFILES)
 

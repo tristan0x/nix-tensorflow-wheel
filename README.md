@@ -39,7 +39,7 @@ tensorflow-1.4.0-cp34-cp34m-linux_x86_64.whl
 ```
 
 Make targets above trigger build of TensorFlow within Docker containers.
-All Docker images and containers are managed by docker-compose. See \
+All Docker images and containers are managed by docker-compose. See
 [`docker-compose.yaml`](./docker-compose.yaml) for more information.
 
 ## Environment variables

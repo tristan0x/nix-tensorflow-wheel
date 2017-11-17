@@ -34,7 +34,7 @@ TF_GITHUB_DOCKERFILES = \
 	context/Dockerfile.devel-gpu.github \
 
 TF_GITHUB_VERSION = v1.4.0-bbp
-TF_GITHUB_RAW = https://raw.githubusercontent.com/tensorflow/tensorflow/$(TF_GITHUB_VERSION)
+TF_GITHUB_RAW = https://raw.githubusercontent.com/tristan0x/tensorflow/$(TF_GITHUB_VERSION)
 TF_GITHUB_RECIPE_DIR = tensorflow/tools/docker
 
 all: gpu
@@ -62,17 +62,17 @@ tensorflow-%-whl: tensorflow-%
 
 # Dockerfiles generation for Python 2
 context/Dockerfile.devel: context/Dockerfile.devel.github scripts/fetch-tensorflow-recipe
-	scripts/fetch-tensorflow-recipe $@
+	TF_GITHUB_VERSION=$(TF_GITHUB_VERSION) scripts/fetch-tensorflow-recipe $@
 
 context/Dockerfile.devel-gpu: context/Dockerfile.devel-gpu.github scripts/fetch-tensorflow-recipe
-	scripts/fetch-tensorflow-recipe $@
+	TF_GITHUB_VERSION=$(TF_GITHUB_VERSION) scripts/fetch-tensorflow-recipe $@
 
 # Dockerfiles generation for Python 3
 context/Dockerfile.devel-py3: context/Dockerfile.devel-gpu.github scripts/fetch-tensorflow-recipe
-	scripts/fetch-tensorflow-recipe --three $(@:-py3=)
+	TF_GITHUB_VERSION=$(TF_GITHUB_VERSION) scripts/fetch-tensorflow-recipe --three $(@:-py3=)
 
 context/Dockerfile.devel-gpu-py3: context/Dockerfile.devel-gpu.github scripts/fetch-tensorflow-recipe
-	scripts/fetch-tensorflow-recipe --three $(@:-py3=)
+	TF_GITHUB_VERSION=$(TF_GITHUB_VERSION) scripts/fetch-tensorflow-recipe --three $(@:-py3=)
 
 context/Dockerfile.devel.github context/Dockerfile.devel-gpu.github:
 	recipe=$(notdir $@) ; \

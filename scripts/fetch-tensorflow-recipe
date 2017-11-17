@@ -12,6 +12,7 @@ update_recipe() {
     "$SED" -e 's@^\(FROM.*\)@\1\nARG TF_CFLAGS\nENV CC_OPT_FLAGS="${TF_CFLAGS}"\nRUN ln -s /usr/bin/python3 /usr/bin/python@' \
     | "$SED" '/    rm -rf \/tmp\/pip && \\/d' \
     | sed "s@https://github.com/tensorflow@https://github.com/tristan0x@" \
+    | sed "s/git checkout.*/git checkout ${TF_GITHUB_VERSION}/" \
     | "$SED" 's/bazel build /bazel build -s /'
 }
 

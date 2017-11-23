@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM tristan0x/nix:bbp
 ARG TF_CFLAGS
 ENV CC_OPT_FLAGS="${TF_CFLAGS}"
 RUN ln -s /usr/bin/python3 /usr/bin/python
@@ -29,6 +29,44 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN curl -fSsL -O https://bootstrap.pypa.io/get-pip.py && \
     python get-pip.py && \
     rm get-pip.py
+
+# Install TensorFlow Nix requirements
+# When Nix recipe has been merged into master, command below will suffice:
+#       nix-env -iA bbp-pkgs.tensorflow.dependencies
+RUN nix-env -i \
+        -A bbp-pkgs.gcc49 \
+        -A bbp-pkgs.python27Packages.backports_shutil_get_terminal_size \
+        -A bbp-pkgs.python27Packages.dateutil \
+        -A bbp-pkgs.python27Packages.decorator \
+        -A bbp-pkgs.python27Packages.enum \
+        -A bbp-pkgs.python27Packages.ipykernel \
+        -A bbp-pkgs.python27Packages.ipython \
+        -A bbp-pkgs.python27Packages.ipython_genutils \
+        -A bbp-pkgs.python27Packages.jupyter_client \
+        -A bbp-pkgs.python27Packages.jupyter_core \
+        -A bbp-pkgs.python27Packages.matplotlib \
+        -A bbp-pkgs.python27Packages.numpy \
+        -A bbp-pkgs.python27Packages.pandas \
+        -A bbp-pkgs.python27Packages.pathlib2 \
+        -A bbp-pkgs.python27Packages.pathpy \
+        -A bbp-pkgs.python27Packages.pexpect \
+        -A bbp-pkgs.python27Packages.pickleshare \
+        -A bbp-pkgs.python27Packages.prompt_toolkit \
+        -A bbp-pkgs.python27Packages.pygments \
+        -A bbp-pkgs.python27Packages.pyparsing \
+        -A bbp-pkgs.python27Packages.python \
+        -A bbp-pkgs.python27Packages.pytz \
+        -A bbp-pkgs.python27Packages.pyzmq \
+        -A bbp-pkgs.python27Packages.scikitlearn \
+        -A bbp-pkgs.python27Packages.scipy \
+        -A bbp-pkgs.python27Packages.setuptools30 \
+        -A bbp-pkgs.python27Packages.simplegeneric \
+        -A bbp-pkgs.python27Packages.six \
+        -A bbp-pkgs.python27Packages.traitlets \
+        -A bbp-pkgs.python27Packages.wcwidth \
+        -A bbp-pkgs.python27Packages.wheel
+
+ENV PYTHONPATH=/root/.nix-profile/lib/python2.7/site-packages
 
 RUN pip --no-cache-dir install \
         ipykernel \
@@ -83,6 +121,15 @@ WORKDIR /tensorflow
 # the built directory to the path.
 
 ENV CI_BUILD_PYTHON python
+
+# Patched version of Nix gcc wrapper to add
+# -Wl,-rpath=/nix/store/xr4c5pck9dhhzk0a3dybd4mmhddyc227-gcc-wrapper-4.9.3/lib
+# when linking ...
+# I know ...
+# sorry ...
+# did not find a working bazel way to do that
+#   --linkopt bazel option is not passed when building "contrib" code
+ADD gcc /nix/store/xr4c5pck9dhhzk0a3dybd4mmhddyc227-gcc-wrapper-4.9.3/bin/gcc
 
 RUN tensorflow/tools/ci_build/builds/configured CPU \
     bazel --bazelrc=/tensorflow/.tf_configure.bazelrc build --verbose_failures -s --config=opt -c opt --cxxopt="-D_GLIBCXX_USE_CXX11_ABI=0" \

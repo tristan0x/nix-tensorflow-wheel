@@ -10,10 +10,10 @@ version: '2.3'
 #
 x-custom:
   - &cflags >-
-    -m64 -m80387 -m96bit-long-double -maes -malign-stringops -mavx -mcx16
+    -m80387 -m96bit-long-double -maes -malign-stringops -mavx -mcx16
     -mfancy-math-387 -mfp-ret-in-387 -mfused-madd -mglibc -mhard-float
     -mieee-fp -mpclmul -mpopcnt -mpush-args -mred-zone -msahf -msse -msse2
-    -msse3 -msse4 -msse4.1 -msse4.2 -mssse3 -mstackrealign -mtls-direct-seg-ref
+    -msse3 -msse4 -msse4.1 -msse4.2 -mssse3 -mstackrealign
 
 services:
   tensorflow-py2:
